@@ -1,0 +1,44 @@
+[
+  {
+    "product": "TIERRA",
+    "metricName": "cvr",
+    "targetValue": 2,
+    "warningThreshold": 1.6,
+    "alertThreshold": 1.2
+  },
+  {
+    "product": "TIERRA",
+    "metricName": "repeat_rate",
+    "targetValue": 30,
+    "warningThreshold": 24,
+    "alertThreshold": 18
+  },
+  {
+    "product": "TIERRA",
+    "metricName": "subscription_rate",
+    "targetValue": 15,
+    "warningThreshold": 12,
+    "alertThreshold": 9
+  },
+  {
+    "product": "TIERRA",
+    "metricName": "roas",
+    "targetValue": 300,
+    "warningThreshold": 240,
+    "alertThreshold": 180
+  },
+  {
+    "product": "TIERRA",
+    "metricName": "cart_add_rate",
+    "targetValue": 8,
+    "warningThreshold": 6.4,
+    "alertThreshold": 4.8
+  },
+  {
+    "product": "TIERRA",
+    "metricName": "line_open_rate",
+    "targetValue": 45,
+    "warningThreshold": 36,
+    "alertThreshold": 27
+  }
+]

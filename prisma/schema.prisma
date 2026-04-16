@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model PurchaseHistory {
+  id             Int      @id @default(autoincrement())
+  purchasedAt    DateTime
+  shop           String
+  product        String
+  customerId     String
+  orderId        String   @unique
+  revenue        Float
+  quantity       Int
+  isSubscription Boolean  @default(false)
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
+  createdAt      DateTime @default(now())
+}
+
+model AdMetrics {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  channel     String
+  product     String
+  spend       Float
+  impressions Int
+  clicks      Int
+  ctr         Float
+  conversions Int
+  cpa         Float
+  roas        Float
+}
+
+model SnsMetrics {
+  id             Int      @id @default(autoincrement())
+  weekStart      DateTime
+  channel        String
+  product        String
+  reach          Int
+  saves          Int
+  followersDelta Int
+  engagementRate Float
+}
+
+model LineMetrics {
+  id       Int      @id @default(autoincrement())
+  sentAt   DateTime
+  product  String
+  segment  String
+  sent     Int
+  opens    Int
+  openRate Float
+  clicks   Int
+  ctr      Float
+}
+
+model Action {
+  id           Int       @id @default(autoincrement())
+  source       String
+  product      String
+  title        String
+  description  String
+  priority     String
+  status       String
+  relatedKpi   String
+  effectRating String?
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model AiReport {
+  id         Int      @id @default(autoincrement())
+  weekStart  DateTime
+  promptText String
+  resultText String?
+  resultJson String?
+  createdAt  DateTime @default(now())
+}
+
+model KpiTarget {
+  id               Int    @id @default(autoincrement())
+  product          String
+  metricName       String
+  targetValue      Float
+  warningThreshold Float
+  alertThreshold   Float
+}
