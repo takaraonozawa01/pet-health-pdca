@@ -5,54 +5,11 @@ import KpiTrendChart from '@/components/charts/KpiTrendChart'
 import CohortChart from '@/components/charts/CohortChart'
 import ActionMap from '@/components/ActionMap'
 import PageHeader from '@/components/PageHeader'
-import { getBaseUrl } from '@/lib/api'
+import { getKpiData } from '@/lib/kpi'
+
+import type { KpiData, KpiMetric } from '@/lib/kpi'
 
 type Status = 'ok' | 'warning' | 'alert' | 'neutral'
-
-interface KpiMetric {
-  value: number
-  target: number | null
-  warning: number | null
-  alert: number | null
-}
-
-interface AdTrendPoint {
-  weekStart: string
-  spend: number
-  roas: number
-}
-
-interface KpiResponse {
-  product: string
-  period: { days: number; from: string; to: string }
-  lagging: {
-    revenue: KpiMetric
-    repeatRate: KpiMetric
-    subscriptionRate: KpiMetric
-    roas: KpiMetric
-  }
-  leading: {
-    cartAddRate: KpiMetric
-    lineOpenRate: KpiMetric
-    googleRoas: { value: number; channel: string }
-    igRoas: { value: number; channel: string }
-    igReach: { value: number }
-    igSaves: { value: number }
-  }
-  cohort: Array<{
-    cohortMonth: string
-    totalBuyers: number
-    repeaters: number
-    repeatRatePct: number
-  }>
-  revenueTrend: Array<{
-    weekStart: string
-    revenue: number
-    newRevenue: number
-    returningRevenue: number
-  }>
-  adTrend: AdTrendPoint[]
-}
 
 function getStatus(metric: KpiMetric): Status {
   if (metric.target === null) return 'neutral'
@@ -72,10 +29,7 @@ const NAV_ITEMS = [
 ]
 
 export default async function TierraPage() {
-  const res = await fetch(`${getBaseUrl()}/api/kpi?product=tierra&days=60`, {
-    cache: 'no-store',
-  })
-  const data: KpiResponse = await res.json()
+  const data = await getKpiData('TIERRA', 60)
 
   const { lagging, leading, revenueTrend, adTrend, cohort } = data
 

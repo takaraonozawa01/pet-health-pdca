@@ -3,60 +3,10 @@ import KpiCard from '@/components/KpiCard'
 import AlertBadge from '@/components/AlertBadge'
 import TrendChart from '@/components/charts/TrendChart'
 import PageHeader from '@/components/PageHeader'
-import { getBaseUrl } from '@/lib/api'
+import { getKpiData, getActionsData } from '@/lib/kpi'
+import type { KpiMetric } from '@/lib/kpi'
 
 type Status = 'ok' | 'warning' | 'alert' | 'neutral'
-
-interface KpiMetric {
-  value: number
-  target: number | null
-  warning: number | null
-  alert: number | null
-}
-
-interface KpiResponse {
-  product: string
-  period: { days: number; from: string; to: string }
-  lagging: {
-    revenue: KpiMetric
-    repeatRate: KpiMetric
-    subscriptionRate: KpiMetric
-    roas: KpiMetric
-  }
-  leading: {
-    cartAddRate: KpiMetric
-    lineOpenRate: KpiMetric
-    googleRoas: { value: number; channel: string }
-    igRoas: { value: number; channel: string }
-    igReach: { value: number }
-    igSaves: { value: number }
-  }
-  cohort: Array<{
-    cohortMonth: string
-    totalBuyers: number
-    repeaters: number
-    repeatRatePct: number
-  }>
-  revenueTrend: Array<{
-    weekStart: string
-    revenue: number
-    newRevenue: number
-    returningRevenue: number
-  }>
-}
-
-interface Action {
-  id: number
-  source: string
-  product: string
-  title: string
-  description: string
-  priority: string
-  status: string
-  relatedKpi: string
-  effectRating: string | null
-  dueDate: string | null
-}
 
 function getStatus(metric: KpiMetric): Status {
   if (metric.target === null) return 'neutral'
@@ -79,14 +29,10 @@ function getActionLevel(priority: string): 'ok' | 'warning' | 'alert' {
 }
 
 export default async function DashboardPage() {
-  const base = getBaseUrl()
-  const [kpiRes, actionsRes] = await Promise.all([
-    fetch(`${base}/api/kpi?product=tierra&days=60`, { cache: 'no-store' }),
-    fetch(`${base}/api/actions?product=TIERRA`, { cache: 'no-store' }),
+  const [kpi, actions] = await Promise.all([
+    getKpiData('TIERRA', 60),
+    getActionsData('TIERRA'),
   ])
-
-  const kpi: KpiResponse = await kpiRes.json()
-  const actions: Action[] = await actionsRes.json()
 
   const { lagging, leading, cohort, revenueTrend } = kpi
 

@@ -1,9 +1,13 @@
+import path from 'path'
 import { PrismaClient } from '../app/generated/prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
 function createPrismaClient() {
-  const url = process.env.DATABASE_URL ?? 'file:./prisma/dev.db'
-  const adapter = new PrismaBetterSqlite3({ url })
+  // 絶対パスで dev.db を指定（Vercel サーバーレス環境対応）
+  const dbPath = process.env.DATABASE_URL
+    ?? `file:${path.join(process.cwd(), 'prisma', 'dev.db')}`
+  console.log('[db] connecting:', dbPath)
+  const adapter = new PrismaBetterSqlite3({ url: dbPath })
   return new PrismaClient({ adapter })
 }
 
