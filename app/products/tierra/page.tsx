@@ -5,6 +5,7 @@ import KpiTrendChart from '@/components/charts/KpiTrendChart'
 import CohortChart from '@/components/charts/CohortChart'
 import ActionMap from '@/components/ActionMap'
 import PageHeader from '@/components/PageHeader'
+import { getBaseUrl } from '@/lib/api'
 
 type Status = 'ok' | 'warning' | 'alert' | 'neutral'
 
@@ -71,7 +72,7 @@ const NAV_ITEMS = [
 ]
 
 export default async function TierraPage() {
-  const res = await fetch('http://localhost:3000/api/kpi?product=tierra&days=60', {
+  const res = await fetch(`${getBaseUrl()}/api/kpi?product=tierra&days=60`, {
     cache: 'no-store',
   })
   const data: KpiResponse = await res.json()

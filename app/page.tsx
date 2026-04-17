@@ -3,6 +3,7 @@ import KpiCard from '@/components/KpiCard'
 import AlertBadge from '@/components/AlertBadge'
 import TrendChart from '@/components/charts/TrendChart'
 import PageHeader from '@/components/PageHeader'
+import { getBaseUrl } from '@/lib/api'
 
 type Status = 'ok' | 'warning' | 'alert' | 'neutral'
 
@@ -78,9 +79,10 @@ function getActionLevel(priority: string): 'ok' | 'warning' | 'alert' {
 }
 
 export default async function DashboardPage() {
+  const base = getBaseUrl()
   const [kpiRes, actionsRes] = await Promise.all([
-    fetch('http://localhost:3000/api/kpi?product=tierra&days=60', { cache: 'no-store' }),
-    fetch('http://localhost:3000/api/actions?product=TIERRA', { cache: 'no-store' }),
+    fetch(`${base}/api/kpi?product=tierra&days=60`, { cache: 'no-store' }),
+    fetch(`${base}/api/actions?product=TIERRA`, { cache: 'no-store' }),
   ])
 
   const kpi: KpiResponse = await kpiRes.json()
