@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import KpiCard from '@/components/KpiCard'
 import KpiGauge from '@/components/KpiGauge'
 import FormulaTree from '@/components/FormulaTree'

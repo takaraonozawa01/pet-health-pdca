@@ -8,6 +8,29 @@ import {
   getSubscriptionRateAt,
   getRevenueSummaryAt,
 } from './calculations'
+import purchaseHistoryData from '../data/mock/purchase_history.json'
+import adMetricsData from '../data/mock/ad_metrics.json'
+import snsMetricsData from '../data/mock/sns_metrics.json'
+import kpiTargetsData from '../data/mock/kpi_targets.json'
+
+// Lambda インスタンスごとのシード済みフラグ（同インスタンス内で再シードを防ぐ）
+let _seeded = false
+
+async function ensureSeeded() {
+  if (_seeded) return
+  const count = await prisma.kpiTarget.count()
+  if (count > 0) {
+    _seeded = true
+    return
+  }
+  console.log('[kpi] auto-seeding from mock data...')
+  await prisma.purchaseHistory.createMany({ data: purchaseHistoryData as never[] })
+  await prisma.adMetrics.createMany({ data: adMetricsData as never[] })
+  await prisma.snsMetrics.createMany({ data: snsMetricsData as never[] })
+  await prisma.kpiTarget.createMany({ data: kpiTargetsData as never[] })
+  console.log('[kpi] auto-seed complete')
+  _seeded = true
+}
 
 export interface KpiMetric {
   value: number
@@ -50,6 +73,7 @@ export interface KpiData {
 }
 
 export async function getKpiData(product: string, days: number): Promise<KpiData> {
+  await ensureSeeded()
   const productKey = product.toUpperCase() === 'TIERRA' ? 'TIERRA' : product
   const now = new Date()
   const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
@@ -258,6 +282,7 @@ export async function getKpiData(product: string, days: number): Promise<KpiData
 }
 
 export async function getActionsData(product: string) {
+  await ensureSeeded()
   return prisma.action.findMany({
     where: { product },
     orderBy: { createdAt: 'desc' },

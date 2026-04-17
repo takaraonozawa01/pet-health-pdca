@@ -1,10 +1,22 @@
 import path from 'path'
-import fs from 'fs'
 import Database from 'better-sqlite3'
 import { PrismaClient } from '../app/generated/prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
-// マイグレーション SQL（schema.prisma の内容と一致）
+// 唯一のDBパス決定ロジック
+// Windows（ローカル開発）: prisma/dev.db
+// Linux/Mac（Vercel 含む）: /tmp/dev.db
+function getDbPath(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL.replace(/^file:/, '')
+  }
+  if (process.platform === 'win32') {
+    return path.join(process.cwd(), 'prisma', 'dev.db')
+  }
+  return '/tmp/dev.db'
+}
+
+// マイグレーション SQL（schema.prisma と一致）
 const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS "PurchaseHistory" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +34,6 @@ CREATE TABLE IF NOT EXISTS "PurchaseHistory" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "PurchaseHistory_orderId_key" ON "PurchaseHistory"("orderId");
-
 CREATE TABLE IF NOT EXISTS "AdMetrics" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "date" DATETIME NOT NULL,
@@ -36,7 +47,6 @@ CREATE TABLE IF NOT EXISTS "AdMetrics" (
     "cpa" REAL NOT NULL,
     "roas" REAL NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS "SnsMetrics" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "weekStart" DATETIME NOT NULL,
@@ -47,7 +57,6 @@ CREATE TABLE IF NOT EXISTS "SnsMetrics" (
     "followersDelta" INTEGER NOT NULL,
     "engagementRate" REAL NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS "LineMetrics" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "sentAt" DATETIME NOT NULL,
@@ -59,7 +68,6 @@ CREATE TABLE IF NOT EXISTS "LineMetrics" (
     "clicks" INTEGER NOT NULL,
     "ctr" REAL NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS "Action" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "source" TEXT NOT NULL,
@@ -74,7 +82,6 @@ CREATE TABLE IF NOT EXISTS "Action" (
     "completedAt" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS "AiReport" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "weekStart" DATETIME NOT NULL,
@@ -83,7 +90,6 @@ CREATE TABLE IF NOT EXISTS "AiReport" (
     "resultJson" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS "KpiTarget" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "product" TEXT NOT NULL,
@@ -94,30 +100,16 @@ CREATE TABLE IF NOT EXISTS "KpiTarget" (
 );
 `
 
-function resolveDbPath(): string {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL.replace(/^file:/, '')
-  }
-  // Vercel サーバーレス: /tmp のみ書き込み可能
-  if (process.env.VERCEL) {
-    return '/tmp/dev.db'
-  }
-  return path.join(process.cwd(), 'prisma', 'dev.db')
-}
-
 function initSchema(dbPath: string) {
   const raw = new Database(dbPath)
   raw.exec(SCHEMA_SQL)
   raw.close()
 }
 
-function createPrismaClient() {
-  const dbPath = resolveDbPath()
-  console.log('[db] path:', dbPath)
-
-  // テーブルが存在しない場合にスキーマを作成（Vercel 初回起動時など）
+function createPrismaClient(): PrismaClient {
+  const dbPath = getDbPath()
+  console.log('[db] using path:', dbPath)
   initSchema(dbPath)
-
   const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` })
   return new PrismaClient({ adapter })
 }

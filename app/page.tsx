@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import KpiCard from '@/components/KpiCard'
 import AlertBadge from '@/components/AlertBadge'
